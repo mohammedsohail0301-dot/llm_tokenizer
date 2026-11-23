@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Tokenizer | RDR2 Frontier Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#0c0a08] text-[#f4ecdc] min-h-screen flex flex-col font-serif antialiased selection:bg-[#ba181b] selection:text-white">
+
+    <!-- Signature RDR2 Crimson Top Bar -->
+    <div class="h-1 bg-gradient-to-r from-[#ba181b] via-[#e63946] to-[#ba181b] w-full"></div>
+
+    <!-- Top Navigation Header -->
+    <header class="border-b border-[#2b221a] bg-[#14100c]/95 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded bg-[#ba181b] flex items-center justify-center text-white font-bold shadow-md shadow-black/60 border border-[#7a0b0d]">
+                    <span class="text-sm tracking-tighter">RDR</span>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-base font-bold tracking-wider uppercase text-[#f4ecdc]">LLM Tokenizer</span>
+                        <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-[#2a2016] text-[#c59b27] border border-[#3e3226] tracking-widest uppercase">Frontier Ed.</span>
+                    </div>
+                    <p class="text-[11px] text-[#a69780] tracking-wide">3D Latent Manifold &bull; Subword Tokenizer &bull; Vocabulary Ledger</p>
+                </div>
+            </div>
+
+            <!-- Quick Status Pill -->
+            <div class="hidden md:flex items-center gap-3 text-xs">
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded bg-[#1c1712] border border-[#382c20]">
+                    <span class="w-2 h-2 rounded-full bg-[#c59b27]"></span>
+                    <span class="text-[#a69780] uppercase tracking-wider text-[11px]">Ledger:</span>
+                    <span id="header-vocab-count" class="font-mono font-bold text-[#f4ecdc]">0</span>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded bg-[#1c1712] border border-[#382c20]">
+                    <span class="text-[#a69780] uppercase tracking-wider text-[11px]">Algorithm:</span>
+                    <span id="header-active-mode" class="font-bold text-[#ba181b] uppercase tracking-wider">BPE</span>
+                </div>
+                <button id="quick-add-word-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#ba181b] hover:bg-[#991114] text-white font-semibold transition text-xs tracking-wider uppercase shadow-md shadow-black/50 border border-[#7a0b0d]">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Add Word
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs Bar (RDR2 Menu Style) -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1 border-t border-[#231b14] overflow-x-auto">
+            <button class="nav-tab-btn active" data-tab="tab-tokenizer">
+                Tokenizer
+            </button>
+            <button class="nav-tab-btn" data-tab="tab-vocab">
+                Vocabulary & Custom Tokens
+            </button>
+            <button class="nav-tab-btn" data-tab="tab-visualizer">
+                3D Embedding Space
+            </button>
+            <button class="nav-tab-btn" data-tab="tab-bpe-lab">
+                BPE Training Lab
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ============================================================== -->
+        <!-- TAB 1: LIVE TOKENIZER                                          -->
+        <!-- ============================================================== -->
+        <section id="tab-tokenizer" class="tab-pane space-y-6">
+            <!-- Presets & Algorithm Bar -->
+            <div class="flex flex-wrap items-center justify-between gap-4 pro-card p-4">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-semibold text-[#a69780] uppercase tracking-widest mr-1">Excerpts:</span>
+                    <button class="preset-btn px-2.5 py-1 text-xs rounded bg-[#1e1913] hover:bg-[#2b231a] text-[#d6cbba] border border-[#3e3226] transition tracking-wide" data-preset="0">LLM Overview</button>
+                    <button class="preset-btn px-2.5 py-1 text-xs rounded bg-[#1e1913] hover:bg-[#2b231a] text-[#d6cbba] border border-[#3e3226] transition tracking-wide" data-preset="1">Subword Breakdown</button>
+                    <button class="preset-btn px-2.5 py-1 text-xs rounded bg-[#1e1913] hover:bg-[#2b231a] text-[#e8c679] border border-[#7a5a22] transition tracking-wide" data-preset="2">Multilingual Text</button>
+                    <button class="preset-btn px-2.5 py-1 text-xs rounded bg-[#1e1913] hover:bg-[#2b231a] text-[#d6cbba] border border-[#3e3226] transition tracking-wide" data-preset="3">Code Sample</button>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-[#a69780] uppercase tracking-widest mr-1">Algorithm:</span>
+                    <div class="inline-flex rounded bg-[#100d0a] p-0.5 border border-[#382c20] text-xs">
+                        <button class="mode-select-btn px-3 py-1 rounded font-semibold bg-[#ba181b] text-white tracking-wider uppercase text-[11px]" data-mode="bpe">BPE (GPT)</button>
+                        <button class="mode-select-btn px-3 py-1 rounded font-semibold text-[#a69780] hover:text-[#f4ecdc] tracking-wider uppercase text-[11px]" data-mode="wordpiece">WordPiece (BERT)</button>
+                        <button class="mode-select-btn px-3 py-1 rounded font-semibold text-[#a69780] hover:text-[#f4ecdc] tracking-wider uppercase text-[11px]" data-mode="char">Character</button>
+                        <button class="mode-select-btn px-3 py-1 rounded font-semibold text-[#a69780] hover:text-[#f4ecdc] tracking-wider uppercase text-[11px]" data-mode="word">Word</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two-Column Grid: Text Input and Token Output -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Left: Text Input -->
+                <div class="pro-card p-5 flex flex-col space-y-3">
+                    <div class="flex items-center justify-between">
+                        <label for="tokenizer-input" class="text-xs font-bold text-[#f4ecdc] uppercase tracking-widest flex items-center gap-2">
+                            <span>Input Manuscript</span>
+                        </label>
+                        <button id="clear-input-btn" class="text-xs text-[#a69780] hover:text-[#ba181b] transition uppercase tracking-wider font-semibold">Clear</button>
+                    </div>
+                    <textarea id="tokenizer-input" rows="8"
+                        class="w-full bg-[#0d0a07] border border-[#382c20] rounded p-3 text-sm text-[#f4ecdc] font-mono focus:outline-none focus:border-[#ba181b] resize-y transition"
+                        placeholder="Inscribe or paste text to tokenize..."></textarea>
+                    
+                    <div class="text-[11px] text-[#8c7d69] flex items-center justify-between pt-1 font-sans">
+                        <span>Tokens decompose automatically into subword components.</span>
+                        <span id="char-word-indicator" class="font-mono text-[#ab9d87]">0 chars | 0 words</span>
+                    </div>
+                </div>
+
+                <!-- Right: Token Chips Stream -->
+                <div class="pro-card p-5 flex flex-col space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-[#f4ecdc] uppercase tracking-widest">Token Sequence</span>
+                            <span id="token-count-pill" class="text-[11px] px-2 py-0.5 rounded bg-[#241c14] text-[#c59b27] border border-[#423322] font-mono font-bold">0 tokens</span>
+                        </div>
+                        <div class="text-[11px] text-[#a69780] flex items-center gap-3">
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#c59b27]/40 border border-[#c59b27]"></span> Outlaw Word</span>
+                            <button id="view-active-in-3d-btn" class="text-[#ba181b] hover:text-[#e63946] font-bold tracking-wide flex items-center gap-1 uppercase text-xs">
+                                Inspect in 3D &rarr;
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Token Chips Output Container -->
+                    <div id="token-chips-container" class="token-chip-container flex-1">
+                        <div class="text-[#7d705d] text-xs italic m-auto py-8 font-sans">
+                            Tokenized subwords will appear here as distinct frontier ledger chips.
+                        </div>
+                    </div>
+
+                    <!-- Hover Inspector Bar -->
+                    <div id="token-chip-hover-bar" class="text-[11px] font-mono text-[#ab9d87] bg-[#0d0a07] px-3 py-2 rounded border border-[#2b221a] flex items-center justify-between">
+                        <span>Hover over any token to inspect byte properties and index.</span>
+                        <span class="text-[#7a6b57]">Whitespace marker: Ġ</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metrics Summary Grid (RDR2 Ledger Cards) -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div class="metric-card">
+                    <span id="stat-total-tokens" class="metric-value text-[#ba181b]">0</span>
+                    <span class="metric-label">Total Tokens</span>
+                </div>
+                <div class="metric-card">
+                    <span id="stat-char-count" class="metric-value">0</span>
+                    <span class="metric-label">Characters</span>
+                </div>
+                <div class="metric-card">
+                    <span id="stat-word-count" class="metric-value">0</span>
+                    <span class="metric-label">Words</span>
+                </div>
+                <div class="metric-card">
+                    <span id="stat-compression" class="metric-value text-[#c59b27]">0.00</span>
+                    <span class="metric-label">Chars / Token</span>
+                </div>
+                <div class="metric-card">
+                    <span id="stat-bytes" class="metric-value text-[#d6cbba]">0</span>
+                    <span class="metric-label">UTF-8 Bytes</span>
+                </div>
+            </div>
+
+            <!-- Detailed Token Breakdown Table -->
+            <div class="pro-card overflow-hidden">
+                <div class="px-5 py-3 border-b border-[#2b221a] flex items-center justify-between">
+                    <h3 class="text-xs font-bold text-[#f4ecdc] uppercase tracking-wider">
+                        Ledger Breakdown Table
+                    </h3>
+                    <span class="text-[11px] text-[#a69780]">Position, Token ID, Category, Hex Bytes & Coordinates</span>
+                </div>
+                <div class="max-h-72 overflow-y-auto">
+                    <table class="styled-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Token</th>
+                                <th>Token ID</th>
+                                <th>Category</th>
+                                <th>Bytes</th>
+                                <th>3D Coords [X, Y, Z]</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="token-table-body">
+                            <tr>
+                                <td colspan="7" class="text-center py-6 text-[#7d705d] italic">No input manuscript yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ============================================================== -->
+        <!-- TAB 2: VOCABULARY & CUSTOM TOKENS ("ADD WORD")                -->
+        <!-- ============================================================== -->
+        <section id="tab-vocab" class="tab-pane hidden space-y-6">
+            
+            <!-- Top Form: Register Custom Word to Vocabulary -->
+            <div class="pro-card p-6 border-[#3e3226] bg-[#16120e]">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#2b221a] pb-4 mb-5">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-base font-bold text-[#f4ecdc] uppercase tracking-wider">Register Custom Word to Vocabulary</h2>
+                            <span class="px-2 py-0.2 rounded text-[10px] font-bold bg-[#ba181b]/20 text-[#ba181b] border border-[#ba181b]/40 uppercase tracking-widest">Naya Word Add</span>
+                        </div>
+                        <p class="text-xs text-[#ab9d87] mt-1 max-w-2xl font-sans">
+                            Register any custom word, slang, domain term, or multilingual expression. Once registered, the tokenizer will treat the word as a single atomic token instead of splitting it into subwords, and place it into the 3D embedding space.
+                        </p>
+                    </div>
+
+                    <!-- Live Before / After Demonstration Box -->
+                    <div class="bg-[#0e0b08] border border-[#382c20] p-3 rounded text-xs min-w-[260px]">
+                        <div class="text-[11px] font-bold text-[#a69780] mb-1 flex items-center justify-between uppercase tracking-wider">
+                            <span>Subword Synthesis</span>
+                            <span class="text-[#c59b27] text-[10px] font-mono">Live Sync</span>
+                        </div>
+                        <div class="text-[#d6cbba] font-mono text-[11px]">
+                            Before: <span id="demo-before-token" class="text-[#ba181b]">["anti", "gravity"]</span>
+                        </div>
+                        <div class="text-[#d6cbba] font-mono text-[11px] mt-0.5">
+                            After: &nbsp;<span id="demo-after-token" class="text-[#c59b27] font-bold">["Antigravity"]</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Word Input Form -->
+                <form id="add-word-form" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Word Input -->
+                        <div>
+                            <label class="block text-xs font-semibold text-[#d6cbba] mb-1 uppercase tracking-wide">
+                                Word / Token String <span class="text-[#ba181b]">*</span>
+                            </label>
+                            <input type="text" id="new-word-input" required
+                                class="w-full bg-[#0d0a07] border border-[#3e3226] rounded px-3 py-2 text-sm text-[#f4ecdc] font-mono focus:outline-none focus:border-[#ba181b]"
+                                placeholder="e.g. Antigravity, Arthur, NayaShabd">
+                        </div>
+
+                        <!-- Semantic Category -->
+                        <div>
+                            <label class="block text-xs font-semibold text-[#d6cbba] mb-1 uppercase tracking-wide">
+                                Category
+                            </label>
+                            <select id="new-word-category"
+                                class="w-full bg-[#0d0a07] border border-[#3e3226] rounded px-3 py-2 text-sm text-[#f4ecdc] focus:outline-none focus:border-[#ba181b]">
+                                <option value="user_added" selected>Outlaw Gold (Custom)</option>
+                                <option value="ai_tech">Colt Blue (AI & Tech)</option>
+                                <option value="hinglish">Saddle Tan (Indic / Multi)</option>
+                                <option value="verb">Pine Green (Actions / Verbs)</option>
+                                <option value="grammar">Dusty Maroon (Syntax)</option>
+                                <option value="code">Gunmetal Slate (Code)</option>
+                                <option value="subword">Rust Copper (Subwords)</option>
+                            </select>
+                        </div>
+
+                        <!-- 3D Embedding Strategy -->
+                        <div>
+                            <label class="block text-xs font-semibold text-[#d6cbba] mb-1 uppercase tracking-wide">
+                                3D Embedding Placement
+                            </label>
+                            <select id="new-word-strategy"
+                                class="w-full bg-[#0d0a07] border border-[#3e3226] rounded px-3 py-2 text-sm text-[#f4ecdc] focus:outline-none focus:border-[#ba181b]">
+                                <option value="subwords" selected>Subword Average (Natural)</option>
+                                <option value="anchor">Anchor near existing token</option>
+                                <option value="cluster">Category cluster centroid</option>
+                                <option value="custom">Custom 3D coordinates [X,Y,Z]</option>
+                            </select>
+                        </div>
+
+                        <!-- Dynamic Strategy Target -->
+                        <div id="strategy-options-container">
+                            <label id="strategy-option-label" class="block text-xs font-semibold text-[#d6cbba] mb-1 uppercase tracking-wide">
+                                Anchor Word
+                            </label>
+                            <select id="new-word-anchor-select"
+                                class="w-full bg-[#0d0a07] border border-[#3e3226] rounded px-3 py-2 text-sm text-[#f4ecdc] focus:outline-none focus:border-[#ba181b]">
+                                <option value="token">token (AI)</option>
+                                <option value="model">model (AI)</option>
+                                <option value="naya">naya (Indic)</option>
+                                <option value="build">build (Verb)</option>
+                            </select>
+                            <input type="text" id="new-word-custom-coords"
+                                class="w-full bg-[#0d0a07] border border-[#3e3226] rounded px-3 py-2 text-sm text-[#f4ecdc] font-mono hidden"
+                                placeholder="X, Y, Z (e.g. 25, 40, -10)">
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Custom ID, Description & Submit -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+                        <div>
+                            <label class="block text-xs font-semibold text-[#a69780] mb-1 uppercase tracking-wide">
+                                Token ID (Optional)
+                            </label>
+                            <input type="number" id="new-word-custom-id"
+                                class="w-full bg-[#0d0a07] border border-[#3e3226] rounded px-3 py-1.5 text-xs text-[#f4ecdc] font-mono focus:outline-none focus:border-[#ba181b]"
+                                placeholder="Auto (Next available ID)">
+                        </div>
+
+                        <div class="sm:col-span-2 flex items-end gap-3">
+                            <div class="flex-1">
+                                <label class="block text-xs font-semibold text-[#a69780] mb-1 uppercase tracking-wide">
+                                    Notes / Description (Optional)
+                                </label>
+                                <input type="text" id="new-word-desc"
+                                    class="w-full bg-[#0d0a07] border border-[#3e3226] rounded px-3 py-1.5 text-xs text-[#f4ecdc] focus:outline-none focus:border-[#ba181b]"
+                                    placeholder="e.g. Frontier vocabulary term">
+                            </div>
+                            <button type="submit"
+                                class="px-5 py-2 rounded bg-[#ba181b] hover:bg-[#991114] text-white font-bold text-xs uppercase tracking-wider transition flex items-center gap-1.5 whitespace-nowrap shadow-md shadow-black/60 border border-[#7a0b0d]">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                Inscribe to Ledger
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Active Vocabulary Ledger Table -->
+            <div class="pro-card overflow-hidden">
+                <div class="p-4 border-b border-[#2b221a] flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-sm font-bold text-[#f4ecdc] uppercase tracking-wider">Vocabulary Catalog</h3>
+                            <span id="vocab-table-count" class="text-xs px-2 py-0.5 rounded bg-[#241c14] text-[#c59b27] border border-[#423322] font-mono font-bold">0 tokens</span>
+                        </div>
+                        <p class="text-xs text-[#a69780] mt-0.5 font-sans">Active subword tokens, categories, and 3D vector coordinates</p>
+                    </div>
+
+                    <!-- Search, Filter & Actions -->
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <input type="text" id="vocab-search-input"
+                            class="bg-[#0d0a07] border border-[#3e3226] rounded px-2.5 py-1.5 text-xs text-[#f4ecdc] font-mono placeholder-[#7a6b57] focus:outline-none focus:border-[#ba181b]"
+                            placeholder="Search token or ID...">
+
+                        <select id="vocab-category-filter"
+                            class="bg-[#0d0a07] border border-[#3e3226] rounded px-2.5 py-1.5 text-xs text-[#f4ecdc] focus:outline-none focus:border-[#ba181b]">
+                            <option value="all">All Categories</option>
+                            <option value="user_added">Outlaw Words (Custom)</option>
+                            <option value="ai_tech">Colt Blue (AI)</option>
+                            <option value="verb">Pine Green (Actions)</option>
+                            <option value="grammar">Dusty Maroon (Syntax)</option>
+                            <option value="subword">Rust Copper (Subwords)</option>
+                            <option value="hinglish">Saddle Tan (Indic)</option>
+                            <option value="code">Gunmetal (Code)</option>
+                            <option value="special">Crimson (Special)</option>
+                        </select>
+
+                        <div class="flex items-center gap-1.5">
+                            <button id="export-vocab-btn" class="px-2.5 py-1.5 rounded bg-[#241c14] hover:bg-[#33271c] text-[#d6cbba] text-xs border border-[#3e3226] transition tracking-wide uppercase" title="Export as JSON">
+                                Export
+                            </button>
+                            <button id="import-vocab-btn" class="px-2.5 py-1.5 rounded bg-[#241c14] hover:bg-[#33271c] text-[#d6cbba] text-xs border border-[#3e3226] transition tracking-wide uppercase" title="Import JSON">
+                                Import
+                            </button>
+                            <input type="file" id="import-vocab-file" class="hidden" accept=".json">
+                            <button id="reset-vocab-btn" class="px-2.5 py-1.5 rounded bg-[#241c14] hover:bg-[#ba181b]/30 text-[#ba181b] text-xs border border-[#3e3226] transition tracking-wide uppercase" title="Reset vocabulary">
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vocabulary Table -->
+                <div class="max-h-96 overflow-y-auto">
+                    <table class="styled-table">
+                        <thead>
+                            <tr>
+                                <th>Token ID</th>
+                                <th>Token String</th>
+                                <th>Category</th>
+                                <th>3D Vector [X, Y, Z]</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vocab-table-body">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ============================================================== -->
+        <!-- TAB 3: 3D EMBEDDING SPACE                                      -->
+        <!-- ============================================================== -->
+        <section id="tab-visualizer" class="tab-pane hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- 3D Canvas Viewport -->
+                <div class="lg:col-span-3 flex flex-col space-y-3">
+                    <div class="canvas-viewport" id="canvas-3d-container">
+                        <!-- HUD Controls Overlay -->
+                        <div class="canvas-controls-overlay flex-wrap">
+                            <button id="btn-toggle-labels" class="hud-btn active" title="Toggle text labels">Labels</button>
+                            <button id="btn-toggle-trajectory" class="hud-btn active" title="Toggle sentence trajectory">Trajectory</button>
+                            <button id="btn-toggle-vectors" class="hud-btn" title="Toggle origin vectors">Vectors</button>
+                            <button id="btn-toggle-grid" class="hud-btn active" title="Toggle coordinate grid">Grid</button>
+                            <button id="btn-toggle-autorotate" class="hud-btn" title="Toggle rotation">Auto-Rotate</button>
+                            <button id="btn-reset-camera" class="hud-btn" title="Reset view perspective">Reset View</button>
+                        </div>
+
+                        <!-- Instructions legend overlay -->
+                        <div class="absolute bottom-3 left-3 pointer-events-none z-20 text-[11px] text-[#a69780] bg-[#14100c]/90 px-3 py-1.5 rounded border border-[#382c20]">
+                            Drag to Rotate &bull; Right-Click / Shift + Drag to Pan &bull; Scroll to Zoom &bull; Click Node to Inspect
+                        </div>
+                    </div>
+
+                    <!-- Category Legend Row -->
+                    <div class="pro-card p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+                        <span class="font-bold text-[#f4ecdc] uppercase tracking-wide text-[11px]">Frontier Clusters:</span>
+                        <div class="flex flex-wrap items-center gap-3 font-sans">
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#3b5a82]"></span> Colt Blue</span>
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#2f593b]"></span> Pine Green</span>
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#6b3543]"></span> Dusty Maroon</span>
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#994e2e]"></span> Rust Copper</span>
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#ab712a]"></span> Saddle Tan</span>
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#415359]"></span> Gunmetal</span>
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#ba181b]"></span> Crimson</span>
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#c59b27] border border-[#f0c242]"></span> Outlaw Gold</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar: Inspector & Similarity Tool -->
+                <div class="space-y-5">
+                    <!-- Search & Locate in 3D -->
+                    <div class="pro-card p-4 space-y-2">
+                        <label class="block text-xs font-bold text-[#f4ecdc] uppercase tracking-wide">
+                            Locate in 3D Manifold
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="text" id="flyto-search-input"
+                                class="flex-1 bg-[#0d0a07] border border-[#3e3226] rounded px-2.5 py-1.5 text-xs text-[#f4ecdc] font-mono focus:outline-none focus:border-[#ba181b]"
+                                placeholder="Token name...">
+                            <button id="flyto-btn" class="px-3 py-1.5 rounded bg-[#ba181b] hover:bg-[#991114] text-white font-bold text-xs uppercase tracking-wide transition border border-[#7a0b0d]">
+                                Fly
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Selected Token Inspector Card -->
+                    <div class="pro-card p-4 space-y-3">
+                        <div class="flex items-center justify-between border-b border-[#2b221a] pb-2">
+                            <h3 class="text-xs font-bold text-[#f4ecdc] uppercase tracking-wider">
+                                Token Inspector
+                            </h3>
+                            <span id="inspector-badge" class="text-[10px] px-2 py-0.5 rounded bg-[#241c14] text-[#c59b27] border border-[#423322] uppercase tracking-wider">Selected</span>
+                        </div>
+
+                        <div id="inspector-content" class="space-y-2 text-xs">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[#a69780]">Token:</span>
+                                <span id="insp-token" class="font-mono font-bold text-[#f4ecdc] text-sm">"token"</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[#a69780]">Coordinates:</span>
+                                <span id="insp-pos" class="font-mono text-[#c59b27]">[45.0, 20.0, 25.0]</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[#a69780]">Category:</span>
+                                <span id="insp-category" class="font-medium text-[#d6cbba] capitalize">ai_tech</span>
+                            </div>
+
+                            <!-- Nearest Neighbors List -->
+                            <div class="pt-2 border-t border-[#2b221a]">
+                                <span class="text-[#a69780] text-[11px] block mb-1.5 font-bold uppercase tracking-wide">Nearest Semantic Neighbors:</span>
+                                <div id="insp-neighbors" class="space-y-1">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cosine Similarity & Distance Tool -->
+                    <div class="pro-card p-4 space-y-3">
+                        <div class="flex items-center justify-between border-b border-[#2b221a] pb-2">
+                            <h3 class="text-xs font-bold text-[#f4ecdc] uppercase tracking-wider">
+                                Vector Distance Chord
+                            </h3>
+                            <span class="text-[10px] text-[#c59b27] font-mono">Cosine</span>
+                        </div>
+
+                        <div class="space-y-2.5 text-xs">
+                            <div>
+                                <label class="block text-[11px] text-[#a69780] mb-1 font-semibold uppercase tracking-wide">Token A:</label>
+                                <select id="sim-token-a" class="w-full bg-[#0d0a07] border border-[#3e3226] rounded px-2.5 py-1.5 text-xs text-[#f4ecdc]">
+                                    <!-- Populated dynamically -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] text-[#a69780] mb-1 font-semibold uppercase tracking-wide">Token B:</label>
+                                <select id="sim-token-b" class="w-full bg-[#0d0a07] border border-[#3e3226] rounded px-2.5 py-1.5 text-xs text-[#f4ecdc]">
+                                    <!-- Populated dynamically -->
+                                </select>
+                            </div>
+
+                            <button id="calc-sim-btn" class="w-full py-1.5 rounded bg-[#241c14] hover:bg-[#33271c] border border-[#3e3226] text-[#c59b27] font-bold text-xs uppercase tracking-wider transition">
+                                Draw 3D Chord Line
+                            </button>
+
+                            <!-- Results Box -->
+                            <div id="sim-result-box" class="p-2.5 rounded bg-[#0d0a07] border border-[#2b221a] text-[11px] space-y-1 font-mono">
+                                <div class="flex justify-between">
+                                    <span class="text-[#a69780]">Cosine Similarity:</span>
+                                    <span id="sim-val" class="font-bold text-[#c59b27]">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-[#a69780]">Euclidean Distance:</span>
+                                    <span id="dist-val" class="text-[#f4ecdc]">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ============================================================== -->
+        <!-- TAB 4: BUILD VOCABULARY (BPE TRAINING LAB)                     -->
+        <!-- ============================================================== -->
+        <section id="tab-bpe-lab" class="tab-pane hidden space-y-6">
+            <div class="pro-card p-6 space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#2b221a] pb-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-base font-bold text-[#f4ecdc] uppercase tracking-wider">BPE Vocabulary Training Lab</h2>
+                            <span class="px-2 py-0.2 rounded text-[10px] font-bold bg-[#ba181b]/20 text-[#ba181b] border border-[#ba181b]/40 uppercase tracking-widest">Merge Trainer</span>
+                        </div>
+                        <p class="text-xs text-[#ab9d87] mt-1 max-w-2xl font-sans">
+                            Simulate how frontier language models build subword vocabularies from raw training manuscripts by iteratively merging the most frequent adjacent character pairs.
+                        </p>
+                    </div>
+
+                    <!-- Corpus Presets -->
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-[#a69780] font-semibold uppercase tracking-wide">Corpus:</span>
+                        <select id="bpe-corpus-preset" class="bg-[#0d0a07] border border-[#3e3226] rounded px-3 py-1.5 text-xs text-[#f4ecdc]">
+                            <option value="general" selected>AI Overview Corpus</option>
+                            <option value="bpe_demo">BPE Demonstration (low, lower, lowest)</option>
+                            <option value="hinglish">Indic / Multilingual Corpus</option>
+                            <option value="technical">Python Code Manuscript</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Training Corpus Textarea -->
+                <div>
+                    <label class="block text-xs font-semibold text-[#d6cbba] mb-1.5 uppercase tracking-wide">
+                        Training Manuscript
+                    </label>
+                    <textarea id="bpe-corpus-input" rows="5"
+                        class="w-full bg-[#0d0a07] border border-[#3e3226] rounded p-3 text-xs text-[#f4ecdc] font-mono focus:outline-none focus:border-[#ba181b] resize-y"
+                        placeholder="Enter training text..."></textarea>
+                </div>
+
+                <!-- Settings & Action Buttons -->
+                <div class="flex flex-wrap items-center justify-between gap-4 bg-[#0d0a07] border border-[#2b221a] p-3 rounded">
+                    <div class="flex items-center gap-3">
+                        <label class="text-xs text-[#d6cbba] font-bold uppercase tracking-wide">Merge Iterations:</label>
+                        <input type="range" id="bpe-merges-slider" min="5" max="40" value="15" class="w-32 accent-[#ba181b]">
+                        <span id="bpe-merges-val" class="font-mono text-xs text-[#c59b27] font-bold">15</span>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button id="run-bpe-btn"
+                            class="px-4 py-2 rounded bg-[#ba181b] hover:bg-[#991114] text-white font-bold text-xs uppercase tracking-wider transition flex items-center gap-1.5 shadow-md shadow-black/50 border border-[#7a0b0d]">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                            </svg>
+                            Run BPE Training
+                        </button>
+                        <button id="apply-bpe-btn" disabled
+                            class="px-4 py-2 rounded bg-[#241c14] text-[#c59b27] border border-[#423322] font-bold text-xs uppercase tracking-wider transition flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Apply Merges to Ledger
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Merge Sequence Table -->
+            <div class="pro-card overflow-hidden">
+                <div class="px-5 py-3 border-b border-[#2b221a] flex items-center justify-between">
+                    <h3 class="text-xs font-bold text-[#f4ecdc] uppercase tracking-wider">
+                        Merge Sequence & Vocabulary Expansion
+                    </h3>
+                    <span id="bpe-merge-count-label" class="text-[11px] text-[#a69780]">0 merges generated</span>
+                </div>
+                <div class="max-h-80 overflow-y-auto">
+                    <table class="styled-table">
+                        <thead>
+                            <tr>
+                                <th>Step</th>
+                                <th>Pair (A + B)</th>
+                                <th>Merged Token</th>
+                                <th>Corpus Frequency</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bpe-merges-table-body">
+                            <tr>
+                                <td colspan="5" class="text-center py-8 text-[#7d705d] italic font-sans">
+                                    Click "Run BPE Training" above to execute Byte-Pair Encoding and generate subword merge rules.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- RDR2 Toast Notifications -->
+    <div id="toast-container"></div>
+
+    <!-- Application Scripts -->
+    <script src="sample_data.js"></script>
+    <script src="embeddings.js"></script>
+    <script src="tokenizer.js"></script>
+    <script src="visualizer3d.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

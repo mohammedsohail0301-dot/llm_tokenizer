@@ -1,0 +1,323 @@
+/* ==========================================================================
+   LLM Tokenizer Studio - Red Dead Redemption 2 (Frontier Theme)
+   Aesthetic: Aged parchment, dark saddle leather, gunmetal iron, 
+   saloon brass, and signature RDR2 Crimson Red (#ba181b).
+   ========================================================================== */
+
+:root {
+    --bg-page: #0c0a08;
+    --bg-surface: #16120e;
+    --bg-surface-elevated: #1e1913;
+    --bg-surface-subtle: #110e0a;
+    
+    --border-subtle: #2b221a;
+    --border-default: #3e3226;
+    --border-brass: #8c6d2c;
+    --border-active: #ba181b;
+
+    --rdr-red: #ba181b;
+    --rdr-red-dark: #800e13;
+    --rdr-gold: #c59b27;
+    --rdr-parchment: #f4ecdc;
+    --rdr-bone: #c8bcab;
+    --rdr-muted: #807261;
+
+    --text-primary: #f4ecdc;
+    --text-secondary: #c8bcab;
+    --text-muted: #807261;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Georgia", "Playfair Display", "Times New Roman", serif;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+    letter-spacing: 0.01em;
+}
+
+/* RDR2 Surface Cards */
+.pro-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    border-radius: 4px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+
+.pro-card-elevated {
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-brass);
+    border-radius: 4px;
+}
+
+/* Custom Scrollbars (Aged Leather Style) */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #0a0806;
+}
+::-webkit-scrollbar-thumb {
+    background: #382c20;
+    border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #ba181b;
+}
+
+/* ==========================================================================
+   Token Chips: Frontier Journal / Ledger Tags
+   ========================================================================== */
+.token-chip-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 12px;
+    min-height: 120px;
+    max-height: 320px;
+    overflow-y: auto;
+    background: #0f0c09;
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    font-family: "Courier New", ui-monospace, Menlo, Monaco, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.token-chip {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    padding: 2px 7px;
+    border-radius: 3px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.12s ease;
+    white-space: pre;
+    font-weight: 500;
+}
+
+.token-chip:hover {
+    border-color: #ba181b !important;
+    background-color: rgba(186, 24, 27, 0.35) !important;
+    color: #ffffff !important;
+}
+
+/* RDR2 Vintage Frontier Palette for Token Chips */
+.chip-color-0  { background: rgba(59, 90, 130, 0.22); color: #c4d7ed; border: 1px solid rgba(59, 90, 130, 0.45); }
+.chip-color-1  { background: rgba(47, 89, 59, 0.22);  color: #bcdbc3; border: 1px solid rgba(47, 89, 59, 0.45); }
+.chip-color-2  { background: rgba(171, 113, 42, 0.22); color: #ecd2ab; border: 1px solid rgba(171, 113, 42, 0.45); }
+.chip-color-3  { background: rgba(153, 78, 46, 0.22); color: #eec5b3; border: 1px solid rgba(153, 78, 46, 0.45); }
+.chip-color-4  { background: rgba(107, 53, 67, 0.22); color: #dfb9c3; border: 1px solid rgba(107, 53, 67, 0.45); }
+.chip-color-5  { background: rgba(65, 83, 89, 0.22);  color: #bed1d6; border: 1px solid rgba(65, 83, 89, 0.45); }
+.chip-color-6  { background: rgba(186, 24, 27, 0.22); color: #f5b0b2; border: 1px solid rgba(186, 24, 27, 0.45); }
+.chip-color-7  { background: rgba(140, 109, 44, 0.22); color: #e8d7ad; border: 1px solid rgba(140, 109, 44, 0.45); }
+.chip-color-8  { background: rgba(56, 78, 62, 0.22);  color: #c0d9c6; border: 1px solid rgba(56, 78, 62, 0.45); }
+.chip-color-9  { background: rgba(133, 47, 47, 0.22); color: #eab4b4; border: 1px solid rgba(133, 47, 47, 0.45); }
+.chip-color-10 { background: rgba(84, 76, 64, 0.22);  color: #ded8cb; border: 1px solid rgba(84, 76, 64, 0.45); }
+.chip-color-11 { background: rgba(166, 124, 60, 0.22); color: #f2e2be; border: 1px solid rgba(166, 124, 60, 0.45); }
+
+/* User Added Token Chip (Outlaw Gold) */
+.token-chip.user-added-chip {
+    border: 1.5px solid #c59b27 !important;
+    background-color: rgba(197, 155, 39, 0.25) !important;
+    color: #f7eed8 !important;
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   Navigation Tabs (RDR2 Menu Style)
+   ========================================================================== */
+.nav-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 18px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: "Georgia", serif;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.nav-tab-btn:hover {
+    color: var(--text-primary);
+    background: rgba(43, 34, 26, 0.3);
+}
+
+.nav-tab-btn.active {
+    color: #ffffff;
+    border-bottom-color: var(--rdr-red);
+    background: rgba(186, 24, 27, 0.12);
+}
+
+/* ==========================================================================
+   Metric Cards & Badges
+   ========================================================================== */
+.metric-card {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 14px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    border-top: 2px solid var(--rdr-red);
+    border-radius: 4px;
+}
+
+.metric-card .metric-value {
+    font-size: 21px;
+    font-weight: 700;
+    font-family: "Courier New", monospace;
+    color: var(--rdr-parchment);
+}
+
+.metric-card .metric-label {
+    font-size: 10.5px;
+    font-family: "Georgia", serif;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--rdr-muted);
+    margin-top: 4px;
+}
+
+/* Toast Notifications (RDR2 Frontier Telegram Card) */
+#toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.toast-item {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 16px;
+    border-radius: 3px;
+    background: #1c1611;
+    border: 1px solid #3e3226;
+    border-left: 3px solid #ba181b;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+    color: #f4ecdc;
+    font-family: "Georgia", serif;
+    font-size: 12px;
+    animation: fadeInSlide 0.25s ease forwards;
+}
+
+@keyframes fadeInSlide {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   3D Canvas Viewport Container
+   ========================================================================== */
+.canvas-viewport {
+    position: relative;
+    width: 100%;
+    height: 560px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #090705;
+    border: 1px solid var(--border-default);
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.85);
+}
+
+.canvas-controls-overlay {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    gap: 6px;
+    z-index: 20;
+}
+
+.hud-btn {
+    padding: 5px 11px;
+    border-radius: 3px;
+    background: rgba(22, 18, 14, 0.9);
+    border: 1px solid #3e3226;
+    color: #c8bcab;
+    font-family: "Georgia", serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.hud-btn:hover {
+    background: #2b221a;
+    color: #ffffff;
+    border-color: #8c6d2c;
+}
+
+.hud-btn.active {
+    background: #ba181b;
+    border-color: #ba181b;
+    color: #ffffff;
+}
+
+/* ==========================================================================
+   Tables (RDR2 Ledger Style)
+   ========================================================================== */
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.styled-table th {
+    text-align: left;
+    padding: 9px 12px;
+    color: var(--rdr-bone);
+    font-family: "Georgia", serif;
+    font-weight: 600;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: #110e0a;
+    border-bottom: 1px solid #3e3226;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+.styled-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #231c15;
+    color: #d6cbba;
+}
+
+.styled-table tr:hover td {
+    background: rgba(43, 34, 26, 0.45);
+}
+
+/* Category Badge Pills */
+.badge-category {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 2px;
+    font-size: 10.5px;
+    font-family: "Georgia", serif;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
